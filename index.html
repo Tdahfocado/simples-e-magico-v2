@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simples e Mágico - Sistema de Decisões</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Biblioteca para OCR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/2.1.5/tesseract.min.js"></script>
+    <!-- Biblioteca para manipulação de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .magic-icon {
+            font-size: 1.2em;
+            animation: sparkle 2s infinite;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+        
+        .header-watermark {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            opacity: 0.4;
+        }
+        
+        .header-watermark img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: white;
+            padding: 2px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .nav-tab.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab-content {
+            display: none;
+            min-height: 700px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            min-height: 700px;
+        }
+        
+        .form-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+        
+        .preview-section {
+            padding: 30px;
+            background: white;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        /* Upload de Sentença */
+        .upload-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .upload-area {
+            background: rgba(255,255,255,0.1);
+            border: 3px dashed rgba(255,255,255,0.5);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.8);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 8px;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Seção dos ODS */
+        .ods-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
+            border: 2px solid #28a745;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .ods-obrigatorios {
+            background: rgba(25, 118, 210, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .ods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .ods-item {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .ods-item img {
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .ods-item.selected {
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .ods-item.selected img {
+            border-color: #28a745;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .ods-item.obrigatorio {
+            background: rgba(25, 118, 210, 0.1);
+        }
+        
+        .ods-item.obrigatorio img {
+            border-color: #1976d2;
+            box-shadow: 0 0 15px rgba(25, 118, 210, 0.5);
+        }
+        
+        .ods-item:hover img {
+            transform: scale(1.08);
+        }
+        
+        .ods-item label {
+            display: block;
+            font-size: 9px;
+            margin-top: 5px;
+            color: #333;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+        
+        /* Gravador de Áudio */
+        .gravador-section {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .controles-audio {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn-audio {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-gravar {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-parar {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-play {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-gravacao {
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .gravando {
+            background: #f8d7da;
+            color: #721c24;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* TTS Section Styles */
+        .tts-section {
+            background: linear-gradient(135deg, #a8e6cf 0%, #88d8a3 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .tts-controls {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-magic {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .success-message, .error-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        /* Estilos da Decisão */
+        .decisao-gerada {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .decisao-gerada .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .decisao-gerada .info-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .decisao-gerada .result-box {
+            background: #e8f5e8;
+            border: 1px solid #c3e6cb;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+        }
+        
+        .decisao-gerada .section-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .decisao-gerada strong {
+            color: #2c3e50;
+        }
+        
+        .ods-decisao {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 5px solid #1976d2;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .ods-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .ods-icons img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .qr-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px dashed #2196f3;
+        }
+        
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .qr-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .contato-section {
+            background: #e8f4f8;
+            border: 2px solid #17a2b8;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .desenvolvedor-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Estatísticas */
+        .estatisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .qr-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media print {
+            .header-watermark {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-watermark">
+                <img src="imgs/logo_tjce.png" alt="TJCE">
+                <img src="imgs/ods_16.png" alt="ODS 16">
+                <img src="imgs/linguagem_simples.png" alt="Linguagem Simples">
+                <img src="imgs/acessibilidade_universal.png" alt="Acessibilidade">
+            </div>
+            
+            <h1>
+                <span class="magic-icon">✨</span>
+                Simples e Mágico
+                <span class="magic-icon">✨</span>
+            </h1>
+            <p>Sistema Inteligente de Decisões em Linguagem Simples</p>
+            <p style="font-size: 0.9em; opacity: 0.8;">Juizado Especial da Comarca de Tauá - CE</p>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="gerador">🎯 Gerador</button>
+            <button class="nav-tab" data-tab="upload">📁 Upload IA</button>
+            <button class="nav-tab" data-tab="gravador">🎙️ Gravador</button>
+            <button class="nav-tab" data-tab="audio-tts">🎵 Áudio TTS</button>
+            <button class="nav-tab" data-tab="biblioteca">📚 Biblioteca</button>
+            <button class="nav-tab" data-tab="estatisticas">📊 Stats</button>
+        </div>
+        
+        <!-- TAB: GERADOR -->
+        <div id="gerador" class="tab-content active">
+            <div class="main-content">
+                <div class="form-section">
+                    <h2 style="margin-bottom: 25px; color: #2c3e50;">🎯 Gerador Mágico</h2>
+                    
+                    <div class="success-message" id="successMessage"></div>
+                    <div class="error-message" id="errorMessage"></div>
+                    
+                    <form id="decisionForm">
+                        <!-- Dados Básicos -->
+                        <div class="form-group">
+                            <label for="numeroProcesso">📋 Número do Processo <span class="required">*</span></label>
+                            <input type="text" id="numeroProcesso" placeholder="Ex: 0000123-45.2024.8.06.0133" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="autor">👤 Autor <span class="required">*</span></label>
+                                <input type="text" id="autor" placeholder="Nome do autor" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="reu">👤 Réu <span class="required">*</span></label>
+                                <input type="text" id="reu" placeholder="Nome do réu" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Links QR Code -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="linkConsulta">🔍 Link Consulta Processual</label>
+                                <input type="url" id="linkConsulta" placeholder="https://esaj.tjce.jus.br/...">
+                                <div class="help-text">Link para consulta do processo</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="linkAudio">🎧 Link do Áudio</label>
+                                <input type="url" id="linkAudio" placeholder="https://drive.google.com/...">
+                                <div class="help-text">Link do áudio explicativo</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Seção dos ODS -->
+                        <div class="ods-section">
+                            <h4 style="color: #155724; display: flex; align-items: center; gap: 10px;">
+                                🌍 Objetivos de Desenvolvimento Sustentável
+                            </h4>
+                            
+                            <div class="ods-obrigatorios">
+                                <h5 style="color: #1565c0; margin-bottom: 10px;">📌 Sempre Incluídos</h5>
+                                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                    <div class="ods-item obrigatorio">
+                                        <img src="imgs/ods_16.png" alt="ODS 16">
+                                        <label>ODS 16<br>Paz/Justiça</label>
+                                    </div>
+                                    <div class="ods-item obrigatorio">
+                                        <img src="imgs/linguagem_simples.png" alt="Linguagem Simples">
+                                        <label>Linguagem<br>Simples</label>
+                                    </div>
+                                    <div class="ods-item obrigatorio">
+                                        <img src="imgs/logo_tjce.png" alt="TJCE">
+                                        <label>TJCE</label>
+                                    </div>
+                                    <div class="ods-item obrigatorio">
+                                        <img src="imgs/acessibilidade_universal.png" alt="Acessibilidade">
+                                        <label>Acessibilidade<br>Universal</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 style="color: #155724; margin-bottom: 10px;">✅ ODS Relacionados:</h5>
+                            <div class="ods-grid" id="odsGrid"></div>
+                            
+                            <div class="help-text">
+                                💡 Clique nos ODS relacionados ao processo
+                            </div>
+                        </div>
+                        
+                        <!-- Campos Principais -->
+                        <div class="form-group">
+                            <label for="pedido">❓ O que foi pedido <span class="required">*</span></label>
+                            <textarea id="pedido" rows="3" placeholder="Explique de forma simples..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="decisao">⚖️ Como decidiu <span class="required">*</span></label>
+                            <textarea id="decisao" rows="3" placeholder="A decisão de forma simples..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="motivo">🤔 Por que decidiu <span class="required">*</span></label>
+                            <textarea id="motivo" rows="2" placeholder="O motivo da decisão..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="resultado">📋 Resultado <span class="required">*</span></label>
+                            <textarea id="resultado" rows="3" placeholder="O que acontece agora..." required></textarea>
+                        </div>
+                        
+                        <!-- Botões -->
+                        <button type="button" class="btn btn-success" id="btnGerarDecisao">
+                            ✨ Gerar Decisão Mágica
+                        </button>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <button type="button" class="btn" id="btnBaixarPDF">📄 PDF</button>
+                            <button type="button" class="btn" id="btnBaixarHTML">💾 HTML</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="preview-section">
+                    <h3 style="margin-bottom: 20px; color: #2c3e50;">👁️ Pré-visualização</h3>
+                    
+                    <div id="previewDecisao" class="decisao-gerada">
+                        <div style="text-align: center; padding: 50px; color: #666;">
+                            <h3>✨ Aguardando a Mágica</h3>
+                            <p>Preencha os campos para ver sua decisão</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: UPLOAD IA -->
+        <div id="upload" class="tab-content">
+            <div style="padding: 40px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px;">📁 Upload com IA</h2>
+                
+                <div class="upload-section">
+                    <h3 style="margin-bottom: 20px;">🤖 Conversão Automática</h3>
+                    <p>Arraste sua sentença aqui ou clique para selecionar</p>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" multiple>
+                        <span class="upload-icon">📄</span>
+                        <h4>Clique ou arraste arquivos aqui</h4>
+                        <p>PDF, DOC, DOCX, TXT - Máximo 10MB</p>
+                        
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="uploadStatus" style="margin-top: 15px; font-weight: 600;"></div>
+                    
+                    <button class="btn btn-magic" id="btnProcessarIA" disabled>
+                        🚀 Processar com IA
+                    </button>
+                </div>
+                
+                <div id="textoExtraido" style="display: none; background: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">📄 Texto Extraído</h4>
+                    <div id="textoConteudo" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; line-height: 1.4;"></div>
+                    
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <button class="btn" onclick="copiarTextoIA()">📋 Copiar para IA</button>
+                        <button class="btn btn-success" onclick="preencherCamposAutomatico()">✨ Preencher Automático</button>
+                        <!-- NOVO BOTÃO GPT AQUI -->
+                        <a href="https://chatgpt.com/g/g-684d710081f08191b2bb71a46310eb41-simples-e-magico" 
+                           target="_blank" 
+                           class="btn btn-gpt">
+                            🤖 GPT Especializado
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: GRAVADOR -->
+        <div id="gravador" class="tab-content">
+            <div style="padding: 40px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px;">🎙️ Gravador de Áudio</h2>
+                
+                <div class="gravador-section">
+                    <h3 style="margin-bottom: 20px; color: #721c24;">🎤 Gravação Profissional</h3>
+                    
+                    <div id="statusGravacao" class="status-gravacao">
+                        🎤 Pronto para gravar
+                    </div>
+                    
+                    <div id="tempoGravacao" style="font-size: 1.5em; font-weight: bold; margin: 15px 0; color: #2c3e50;">
+                        00:00
+                    </div>
+                    
+                    <div class="controles-audio">
+                        <button class="btn-audio btn-gravar" id="btnIniciarGravacao">
+                            🔴 Gravar
+                        </button>
+                        <button class="btn-audio btn-parar" id="btnPararGravacao" disabled>
+                            ⏹️ Parar
+                        </button>
+                        <button class="btn-audio btn-play" id="btnReproducir" disabled>
+                            ▶️ Ouvir
+                        </button>
+                    </div>
+                    
+                    <audio id="audioPlayer" controls style="width: 100%; margin: 20px 0; display: none;"></audio>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                        <button class="btn" id="btnBaixarAudio" disabled>💾 Baixar MP3</button>
+                        <button class="btn btn-success" id="btnGerarQRAudio" disabled>📱 Gerar QR</button>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-top: 30px;">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">💡 Dicas para Gravação Perfeita</h4>
+                    <ul style="line-height: 2; padding-left: 20px;">
+                        <li>🎯 <strong>Ambiente:</strong> Escolha local silencioso</li>
+                        <li>🗣️ <strong>Dicção:</strong> Fale pausadamente e claro</li>
+                        <li>⏱️ <strong>Tempo:</strong> Ideal entre 2-4 minutos</li>
+                        <li>📝 <strong>Roteiro:</strong> Pratique antes de gravar</li>
+                        <li>☁️ <strong>Armazenamento:</strong> Faça upload para nuvem</li>
+                        <li>🔗 <strong>Link:</strong> Cole no campo do formulário</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: GERADOR DE ÁUDIO TTS -->
+        <div id="audio-tts" class="tab-content">
+            <div style="padding: 40px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px;">🎙️ Gerador de Áudio TTS</h2>
+                
+                <div class="tts-section">
+                    <h3 style="margin-bottom: 20px; color: #721c24;">🤖 Transformar Texto em Áudio</h3>
+                    
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <h4 style="color: #155724; margin-bottom: 15px;">📝 Como usar:</h4>
+                        <ol style="line-height: 1.8; color: #155724;">
+                            <li><strong>Preencha</strong> os campos na aba "Gerador"</li>
+                            <li><strong>Clique</strong> em "Gerar Texto para Áudio" abaixo</li>
+                            <li><strong>Revise</strong> o texto gerado</li>
+                            <li><strong>Clique</strong> em "Gerar Áudio MP3"</li>
+                            <li><strong>Baixe</strong> o arquivo e faça upload para nuvem</li>
+                            <li><strong>Cole o link</strong> na aba "Gerador"</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="tts-controls">
+                        <button class="btn btn-magic" id="btnGerarTextoAudio">
+                            ✨ Gerar Texto para Áudio
+                        </button>
+                        
+                        <div id="textoAudioGerado" style="display: none; margin: 20px 0;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px;">📄 Texto Gerado:</h4>
+                            <textarea id="textoParaAudio" rows="8" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; resize: vertical; font-size: 14px;"></textarea>
+                            
+                            <div style="margin: 15px 0;">
+                                <label>
+                                    <input type="checkbox" id="incluirIntroducao" checked> 
+                                    Incluir introdução explicativa
+                                </label>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                                <button class="btn btn-success" id="btnGerarAudioTTS">
+                                    🎵 Gerar Áudio MP3
+                                </button>
+                                <button class="btn" id="btnEditarTexto">
+                                    ✏️ Editar Texto
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="audioGerado" style="display: none; margin: 20px 0; text-align: center;">
+                            <h4 style="color: #28a745; margin-bottom: 15px;">🎉 Áudio Gerado com Sucesso!</h4>
+                            <audio id="audioPlayerTTS" controls style="width: 100%; margin: 15px 0;"></audio>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                                <a id="linkDownloadAudio" class="btn btn-success" download="decisao-audio.mp3">
+                                    💾 Baixar MP3
+                                </a>
+                                <button class="btn" id="btnNovoAudio">
+                                    🔄 Gerar Novo Áudio
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="statusTTS" style="margin: 15px 0; font-weight: 600; text-align: center;"></div>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-top: 30px;">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">💡 Dicas para Melhor Áudio</h4>
+                    <ul style="line-height: 2; padding-left: 20px;">
+                        <li>🎯 <strong>Revise o texto</strong> antes de gerar o áudio</li>
+                        <li>📝 <strong>Use pontuação</strong> para pausas naturais</li>
+                        <li>🗣️ <strong>Evite abreviações</strong> - escreva por extenso</li>
+                        <li>⏱️ <strong>Textos longos</strong> podem demorar mais para processar</li>
+                        <li>☁️ <strong>Faça upload</strong> para Google Drive ou Dropbox</li>
+                        <li>🔗 <strong>Configure como público</strong> para gerar QR code</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: BIBLIOTECA -->
+        <div id="biblioteca" class="tab-content">
+            <div style="padding: 40px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px;">📚 Biblioteca de Templates</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="stat-card" onclick="carregarTemplate('cobranca')">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">💰</div>
+                        <h4>Cobrança/Dívida</h4>
+                        <p>Template para ações de cobrança</p>
+                    </div>
+                    
+                    <div class="stat-card" onclick="carregarTemplate('consumidor')">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🛒</div>
+                        <h4>Relação de Consumo</h4>
+                        <p>Template para direito do consumidor</p>
+                    </div>
+                    
+                    <div class="stat-card" onclick="carregarTemplate('locacao')">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🏠</div>
+                        <h4>Locação</h4>
+                        <p>Template para ações de despejo</p>
+                    </div>
+                    
+                    <div class="stat-card" onclick="carregarTemplate('transito')">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🚗</div>
+                        <h4>Acidente de Trânsito</h4>
+                        <p>Template para indenizações</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: ESTATÍSTICAS -->
+        <div id="estatisticas" class="tab-content">
+            <div style="padding: 40px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px;">📊 Estatísticas</h2>
+                
+                <div class="estatisticas">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalDecisoes">0</div>
+                        <div class="stat-label">Decisões Criadas</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUploads">0</div>
+                        <div class="stat-label">Uploads Processados</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalGravacoes">0</div>
+                        <div class="stat-label">Áudios Gravados</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalGPT">0</div>
+                        <div class="stat-label">Consultas ao GPT</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">18</div>
+                        <div class="stat-label">ODS Disponíveis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÃO FLUTUANTE GPT -->
+    <div class="floating-gpt-button">
+        <a href="https://chatgpt.com/g/g-684d710081f08191b2bb71a46310eb41-simples-e-magico" 
+           target="_blank" 
+           class="btn-gpt-float"
+           title="Abrir Assistente IA Especializado">
+            <span class="gpt-icon">🤖</span>
+            <span class="gpt-text">Assistente IA</span>
+        </a>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script src="js/upload.js"></script>
+    <script src="js/gravador.js"></script>
+    <script src="js/tts.js"></script>
+</body>
+</html>
