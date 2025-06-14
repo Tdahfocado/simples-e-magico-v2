@@ -498,7 +498,7 @@ class SimplesEMagico {
                     <p>📱 <strong>WhatsApp:</strong> (85) 98198-8631 (apenas mensagens)</p>
                     <p>📧 <strong>E-mail:</strong> taua.jecc@tjce.jus.br</p>
                     <p>📍 <strong>Endereço:</strong> Avenida Abgail Cidrão de Oliveira, S/N - Colibri</p>
-                    <p>🕒 <strong>Atendimento:</strong> Segunda a Sexta, 8h às 14h</p>
+                    <p>🕒 <strong>Atendimento:</strong> Segunda a Sexta, 8h às 18h</p>
                 </div>
             </div>
         `;
