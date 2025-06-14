@@ -1,7 +1,7 @@
 /**
  * Sistema Simples e Mágico - JavaScript Principal
  * Desenvolvido para o Juizado Especial da Comarca de Tauá - CE
- * Autor: Juiz de Direito Titular
+ * Autor: Juiz de Direito Titular Sérgio Augusto Furtado Neto Viana
  */
 
 class SimplesEMagico {
