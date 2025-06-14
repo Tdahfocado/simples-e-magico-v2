@@ -510,7 +510,7 @@ class SimplesEMagico {
     gerarSecaoDesenvolvedor() {
         return `
             <div class="desenvolvedor-section">
-                <p><strong>✨ Sistema "Simples e Mágico" desenvolvido pelo Juiz de Direito Titular do Juizado Especial da Comarca de Tauá</strong></p>
+                <p><strong>✨ Sistema "Simples e Mágico" desenvolvido pelo Juiz de Direito Titular do Juizado Especial da Comarca de Tauá: Sérgio Augusto Furtado Neto Viana</strong></p>
                 <p>Versão 2.0 - ${new Date().getFullYear()} | Em conformidade com a Recomendação 144/2023 do CNJ sobre Linguagem Simples</p>
                 <p style="margin-top: 10px; font-style: italic;">
                     "A justiça só é verdadeiramente acessível quando é compreensível por todos"
