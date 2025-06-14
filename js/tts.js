@@ -5,7 +5,7 @@
 
 class TTSGenerator {
     constructor() {
-        this.apiUrl = 'https://sistema-tts-api.onrender.com'; // URL do backend
+        this.apiUrl = 'https://simples-e-magico-v2.onrender.com';
         this.currentAudioBlob = null;
         this.init();
     }
