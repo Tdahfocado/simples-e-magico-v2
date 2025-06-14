@@ -242,7 +242,7 @@ class SimplesEMagico {
         div.innerHTML = `
             <img src="imgs/${ods.id}.png" 
                  alt="${ods.id}" 
-                 onerror="this.src='imgs/placeholder.png'">
+                 onerror="this.style.display='none'">
             <label>${ods.nome}</label>
         `;
         
